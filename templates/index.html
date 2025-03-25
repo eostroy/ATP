@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATP: AI-driven Translation Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary-color: #10a37f;
+            --secondary-color: #1a7f64;
+            --accent-color: #ff6b6b;
+            --background-color: #ffffff;
+            --card-background: #f7f7f8;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --border-color: #e5e5e5;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --gradient-start: #10a37f;
+            --gradient-end: #1a7f64;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* 加载动画 */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--background-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease-out;
+            overflow: hidden;
+        }
+
+        .loader-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 多语言问候语动画 */
+        .greetings-container {
+            height: 40px;
+            position: relative;
+            width: 150px;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .greeting {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--primary-color);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        @keyframes greetingAnimation {
+            0%, 100% { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            10%, 90% { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .background-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            opacity: 0.1;
+            border-radius: 50%;
+            animation: shapeFloat 20s infinite linear;
+        }
+
+        .shape:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            top: 50%;
+            left: 50%;
+            animation-delay: -10s;
+        }
+
+        @keyframes shapeFloat {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(100px, 100px) rotate(180deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+
+        .logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--text-primary);
+            font-size: 2.5em;
+            font-weight: 600;
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 2px;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .translation-section {
+            flex: 1;
+            min-width: 500px;
+            background: var(--card-background);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .translation-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .translation-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px var(--shadow-color);
+        }
+
+        .translation-section:hover::before {
+            opacity: 1;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: color 0.3s ease;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="file"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 163, 127, 0.2);
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #status {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .progress {
+            margin-top: 25px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .download-section {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 163, 127, 0.2);
+        }
+
+        .download-btn:hover::before {
+            left: 100%;
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 交互翻译页面样式 */
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: var(--background-color);
+        }
+
+        .interactive-container {
+            display: flex;
+            gap: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+            margin-left: 12px;  /* 为切换按钮留出空间 */
+        }
+
+        .interactive-settings {
+            flex: 0 0 280px;  /* 固定初始宽度 */
+            min-width: 280px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            margin-right: 20px;
+        }
+
+        .interactive-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-toggle {
+            position: absolute;
+            left: -24px;  /* 调整位置，让按钮更靠边 */
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(16, 163, 127, 0.1);  /* 半透明背景 */
+            color: var(--primary-color);
+            width: 20px;  /* 减小按钮尺寸 */
+            height: 40px;  /* 增加高度使按钮更容易点击 */
+            border-radius: 4px 0 0 4px;  /* 只保留左侧圆角 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            border: none;
+            opacity: 0.6;  /* 默认半透明 */
+        }
+        
+        .settings-toggle:hover {
+            background: rgba(16, 163, 127, 0.2);
+            opacity: 1;
+        }
+        
+        .settings-collapsed .interactive-settings {
+            flex: 0 0 0;
+            min-width: 0;
+            width: 0;
+            margin: 0;
+            padding: 0;
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .settings-collapsed .settings-toggle {
+            left: -20px;  /* 收起时按钮位置微调 */
+            border-radius: 0 4px 4px 0;  /* 收起时改变圆角方向 */
+        }
+        
+        .settings-collapsed .interactive-chat {
+            flex: 1;
+            margin-left: 0;
+        }
+
+        .send-button {
+            margin-top: 10px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            max-width: 90%;
+        }
+
+        .user-message {
+            background-color: #f0f7ff;
+            border: 1px solid #d0e3ff;
+            padding: 12px;
+            border-radius: 8px;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            padding: 12px 0;
+            line-height: 1.5;
+        }
+
+        .model-name {
+            font-size: 0.8em;
+            color: var(--secondary-color);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .temperature-slider-container {
+            position: relative;
+            width: 100%;
+            height: 40px;
+            margin-top: 10px;
+        }
+
+        .temperature-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e5e5;
+            outline: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        .temperature-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .temperature-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+        }
+
+        .temperature-slider::-webkit-slider-thumb:active {
+            transform: scale(1.05);
+        }
+
+        .temperature-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .temperature-marks {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            color: var(--text-secondary);
+            font-size: 0.8em;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                flex-direction: column;
+            }
+
+            .translation-section {
+                min-width: 100%;
+            }
+        }
+
+        /* 入口选择样式 */
+        .entry-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 50px auto;
+            max-width: 1000px;
+        }
+        
+        .entry-card {
+            flex: 1;
+            height: 200px;
+            background: var(--card-background);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .entry-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .entry-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px var(--shadow-color);
+        }
+        
+        .entry-card:hover::before {
+            opacity: 1;
+        }
+        
+        .entry-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .entry-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        
+        .entry-desc {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+        
+        /* 页面区域 */
+        .page-area {
+            display: none;
+        }
+        
+        .page-area.active {
+            display: block;
+        }
+        
+        /* 空页面提示 */
+        .empty-page {
+            text-align: center;
+            padding: 100px 20px;
+        }
+        
+        .empty-page h2 {
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+        
+        .empty-page p {
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* 设置切换按钮的动画效果 */
+        .settings-toggle i {
+            transition: transform 0.3s ease;
+            font-size: 10px;  /* 减小图标尺寸 */
+        }
+        
+        .settings-collapsed .settings-toggle i {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载动画 -->
+    <div class="loader-container" id="loader">
+        <div class="background-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        <div class="loader-content">
+            <div class="logo-container">
+                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:var(--gradient-start);stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:var(--gradient-end);stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    
+                    <!-- 左侧人形 - 距离更近 -->
+                    <g id="leftPerson" opacity="0">
+                        <!-- 头部 -->
+                        <circle cx="70" cy="90" r="10" fill="none" stroke="url(#logoGradient)" stroke-width="2.5"/>
+                        <!-- 身体主干 - 更完整的身体 -->
+                        <path d="M70,100 C68,110 68,120 70,130" fill="none" stroke="url(#logoGradient)" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- 肩膀 -->
+                        <path d="M70,105 C74,103 78,103 82,105" fill="none" stroke="url(#logoGradient)" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- 腿部 -->
+                        <line x1="70" y1="130" x2="60" y2="150" stroke="url(#logoGradient)" stroke-width="2.5" stroke-linecap="round"/>
+                        <line x1="70" y1="130" x2="80" y2="150" stroke="url(#logoGradient)" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- 手臂 - 最初不可见但会伸向地球 -->
+                        <path id="leftArm" d="M75,105 C78,107 82,108 85,110" fill="none" stroke="url(#logoGradient)" stroke-width="2.5" stroke-linecap="round" opacity="0">
+                            <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.8s" fill="freeze"/>
+                            <animateTransform attributeName="transform" type="rotate" from="0 75 105" to="15 75 105" dur="0.7s" begin="0.8s" fill="freeze"/>
+                        </path>
+                        
+                        <animate attributeName="opacity" from="0" to="1" dur="0.8s" begin="0s" fill="freeze"/>
+                        <animateTransform attributeName="transform" type="translate" from="-30,0" to="0,0" dur="1.2s" begin="0s" fill="freeze"/>
+                    </g>
+                    
+                    <!-- 右侧人形 - 距离更近 -->
+                    <g id="rightPerson" opacity="0">
+                        <!-- 头部 -->
+                        <circle cx="130" cy="90" r="10" fill="none" stroke="url(#logoGradient)" stroke-width="2.5"/>
+                        <!-- 身体主干 - 更完整的身体 -->
+                        <path d="M130,100 C132,110 132,120 130,130" fill="none" stroke="url(#logoGradient)" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- 肩膀 -->
+                        <path d="M130,105 C126,103 122,103 118,105" fill="none" stroke="url(#logoGradient)" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- 腿部 -->
+                        <line x1="130" y1="130" x2="120" y2="150" stroke="url(#logoGradient)" stroke-width="2.5" stroke-linecap="round"/>
+                        <line x1="130" y1="130" x2="140" y2="150" stroke="url(#logoGradient)" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- 手臂 - 最初不可见但会伸向地球 -->
+                        <path id="rightArm" d="M125,105 C122,107 118,108 115,110" fill="none" stroke="url(#logoGradient)" stroke-width="2.5" stroke-linecap="round" opacity="0">
+                            <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.8s" fill="freeze"/>
+                            <animateTransform attributeName="transform" type="rotate" from="0 125 105" to="-15 125 105" dur="0.7s" begin="0.8s" fill="freeze"/>
+                        </path>
+                        
+                        <animate attributeName="opacity" from="0" to="1" dur="0.8s" begin="0s" fill="freeze"/>
+                        <animateTransform attributeName="transform" type="translate" from="30,0" to="0,0" dur="1.2s" begin="0s" fill="freeze"/>
+                    </g>
+                    
+                    <!-- 中间的地球 -->
+                    <g id="earth" opacity="0">
+                        <!-- 地球主体 -->
+                        <circle cx="100" cy="110" r="12" fill="none" stroke="url(#logoGradient)" stroke-width="2"/>
+                        
+                        <!-- 地球经纬线 - 更详细的地球特征 -->
+                        <ellipse cx="100" cy="110" rx="12" ry="6" fill="none" stroke="url(#logoGradient)" stroke-width="1"/>
+                        <ellipse cx="100" cy="110" rx="9" ry="12" fill="none" stroke="url(#logoGradient)" stroke-width="0.7" transform="rotate(30 100 110)"/>
+                        
+                        <!-- 大陆轮廓 - 简化的大陆形状 -->
+                        <path d="M95,102 Q98,103 100,101 Q104,100 106,102 Q108,106 105,108" fill="none" stroke="url(#logoGradient)" stroke-width="1" opacity="0.8"/>
+                        <path d="M92,112 Q96,114 99,112 Q102,113 104,116" fill="none" stroke="url(#logoGradient)" stroke-width="1" opacity="0.8"/>
+                        <path d="M98,104 L103,106 L101,110" fill="none" stroke="url(#logoGradient)" stroke-width="0.7" opacity="0.6"/>
+                        
+                        <!-- 地球出现动画 -->
+                        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.3s" fill="freeze"/>
+                        <animate attributeName="r" from="0" to="12" dur="0.3s" begin="1.3s" fill="freeze" additive="sum"/>
+                        
+                        <!-- 地球旋转动画 -->
+                        <animateTransform attributeName="transform" 
+                                          type="rotate" 
+                                          from="0 100 110" 
+                                          to="360 100 110" 
+                                          dur="2.5s" 
+                                          begin="1.8s"
+                                          repeatCount="1"
+                                          fill="freeze"/>
+                    </g>
+                    
+                    <!-- 接触效果 -->
+                    <g id="touchEffect" opacity="0">
+                        <!-- 接触光效 -->
+                        <circle cx="100" cy="110" r="0" fill="none" stroke="url(#logoGradient)" stroke-width="1.5">
+                            <animate attributeName="r" from="0" to="25" dur="1.2s" begin="0s" repeatCount="1"/>
+                            <animate attributeName="opacity" from="1" to="0" dur="1.2s" begin="0s" repeatCount="1"/>
+                        </circle>
+                        
+                        <!-- 第二波光效 -->
+                        <circle cx="100" cy="110" r="0" fill="none" stroke="url(#logoGradient)" stroke-width="1">
+                            <animate attributeName="r" from="0" to="35" dur="1.5s" begin="0.3s" repeatCount="1"/>
+                            <animate attributeName="opacity" from="0.7" to="0" dur="1.5s" begin="0.3s" repeatCount="1"/>
+                        </circle>
+                        
+                        <!-- 第三波光效 - 最终强调 -->
+                        <circle cx="100" cy="110" r="0" fill="url(#logoGradient)" opacity="0">
+                            <animate attributeName="r" from="0" to="10" dur="0.3s" begin="1.8s" fill="remove"/>
+                            <animate attributeName="opacity" from="0.3" to="0" dur="0.7s" begin="1.8s" fill="remove"/>
+                        </circle>
+                        
+                        <animate attributeName="opacity" from="0" to="1" dur="0.2s" begin="1.5s" fill="freeze"/>
+                    </g>
+                </svg>
+            </div>
+            <div class="greetings-container">
+                <div class="greeting" data-lang="中文">你好</div>
+                <div class="greeting" data-lang="英文">Hello</div>
+                <div class="greeting" data-lang="日文">こんにちは</div>
+                <div class="greeting" data-lang="韩文">안녕하세요</div>
+                <div class="greeting" data-lang="法文">Bonjour</div>
+                <div class="greeting" data-lang="德文">Hallo</div>
+                <div class="greeting" data-lang="西班牙文">Hola</div>
+                <div class="greeting" data-lang="俄文">Привет</div>
+            </div>
+        </div>
+    </div>
+
+    <h1>ATP: AI-driven Translation Platform</h1>
+    
+    <!-- 三个入口选择 -->
+    <div class="entry-container" id="entryContainer">
+        <div class="entry-card" data-page="interactive">
+            <div class="entry-icon">💬</div>
+            <div class="entry-title">交互翻译</div>
+            <div class="entry-desc">实时交互式翻译体验</div>
+        </div>
+        <div class="entry-card" data-page="ai-translation">
+            <div class="entry-icon">🤖</div>
+            <div class="entry-title">AI翻译</div>
+            <div class="entry-desc">强大的AI驱动的文档翻译</div>
+        </div>
+        <div class="entry-card" data-page="ai-review">
+            <div class="entry-icon">✅</div>
+            <div class="entry-title">AI译审</div>
+            <div class="entry-desc">智能化翻译审核和改进</div>
+        </div>
+    </div>
+
+    <!-- 交互翻译页面 -->
+    <div class="page-area" id="interactivePage">
+        <div class="container">
+            <!-- 上部翻译区域 -->
+            <div class="translation-section">
+                <h2 class="section-title">工作区 1</h2>
+                <div class="interactive-container" id="interactiveContainer1">
+                    <button id="settingsToggle1" class="settings-toggle">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <!-- 左侧设置区域 -->
+                    <div class="interactive-settings">
+                        <form id="interactiveForm1">
+                            <div class="form-group">
+                                <label for="interactive_api_type1">选择API：</label>
+                                <select id="interactive_api_type1" name="api_type" required>
+                                    <option value="deepseek">Deepseek</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="google">Google</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="interactive_api_key1">API密钥：</label>
+                                <input type="password" id="interactive_api_key1" name="api_key" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="interactive_model1">选择模型：</label>
+                                <select id="interactive_model1" name="model" required>
+                                    <!-- Deepseek模型 -->
+                                    <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
+                                    <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
+                                    
+                                    <!-- OpenAI模型 -->
+                                    <option value="gpt-4o" data-api="openai">GPT-4</option>
+                                    <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
+                                    
+                                    <!-- Claude模型 -->
+                                    <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
+                                    
+                                    <!-- Gemini模型 -->
+                                    <option value="gemini-pro" data-api="google">Gemini Pro</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="temperature1">温度 (Temperature): <span id="temperature-value1-interact">1.0</span></label>
+                                <div class="temperature-slider-container">
+                                    <input type="range" id="temperature1-interact" name="temperature" min="0" max="2" step="0.1" value="1.0" class="temperature-slider">
+                                    <div class="temperature-marks">
+                                        <span>0</span>
+                                        <span>1.0</span>
+                                        <span>2.0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="source_lang1-interact">源语言：</label>
+                                <select id="source_lang1-interact" name="source_lang" required>
+                                    <option value="英文">英文</option>
+                                    <option value="中文">中文</option>
+                                    <option value="日文">日文</option>
+                                    <option value="韩文">韩文</option>
+                                    <option value="德文">德文</option>
+                                    <option value="法文">法文</option>
+                                    <option value="西班牙文">西班牙文</option>
+                                    <option value="俄文">俄文</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="target_lang1-interact">目标语言：</label>
+                                <select id="target_lang1-interact" name="target_lang" required>
+                                    <option value="中文">中文</option>
+                                    <option value="英文">英文</option>
+                                    <option value="日文">日文</option>
+                                    <option value="韩文">韩文</option>
+                                    <option value="德文">德文</option>
+                                    <option value="法文">法文</option>
+                                    <option value="西班牙文">西班牙文</option>
+                                    <option value="俄文">俄文</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="system_prompt1-interact">系统提示词：</label>
+                                <textarea id="system_prompt1-interact" name="system_prompt" rows="6" placeholder="输入系统提示词，用于指导翻译风格和规则"></textarea>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 右侧对话区域 -->
+                    <div class="interactive-chat">
+                        <div class="chat-container" id="chatContainer1">
+                            <!-- 对话内容将动态添加到这里 -->
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user_prompt1-interact">用户提示词：</label>
+                            <textarea id="user_prompt1-interact" name="user_prompt" rows="3" placeholder="输入需要翻译的内容..."></textarea>
+                        </div>
+                        
+                        <button type="button" id="sendBtn1" class="send-button">发送</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 下部翻译区域 -->
+            <div class="translation-section">
+                <h2 class="section-title">工作区 2</h2>
+                <div class="interactive-container" id="interactiveContainer2">
+                    <button id="settingsToggle2" class="settings-toggle">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <!-- 左侧设置区域 -->
+                    <div class="interactive-settings">
+                        <form id="interactiveForm2">
+                            <div class="form-group">
+                                <label for="interactive_api_type2">选择API：</label>
+                                <select id="interactive_api_type2" name="api_type" required>
+                                    <option value="deepseek">Deepseek</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="google">Google</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="interactive_api_key2">API密钥：</label>
+                                <input type="password" id="interactive_api_key2" name="api_key" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="interactive_model2">选择模型：</label>
+                                <select id="interactive_model2" name="model" required>
+                                    <!-- Deepseek模型 -->
+                                    <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
+                                    <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
+                                    
+                                    <!-- OpenAI模型 -->
+                                    <option value="gpt-4o" data-api="openai">GPT-4</option>
+                                    <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
+                                    
+                                    <!-- Claude模型 -->
+                                    <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
+                                    
+                                    <!-- Gemini模型 -->
+                                    <option value="gemini-pro" data-api="google">Gemini Pro</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="temperature2-interact">温度 (Temperature): <span id="temperature-value2-interact">1.0</span></label>
+                                <div class="temperature-slider-container">
+                                    <input type="range" id="temperature2-interact" name="temperature" min="0" max="2" step="0.1" value="1.0" class="temperature-slider">
+                                    <div class="temperature-marks">
+                                        <span>0</span>
+                                        <span>1.0</span>
+                                        <span>2.0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="source_lang2-interact">源语言：</label>
+                                <select id="source_lang2-interact" name="source_lang" required>
+                                    <option value="英文">英文</option>
+                                    <option value="中文">中文</option>
+                                    <option value="日文">日文</option>
+                                    <option value="韩文">韩文</option>
+                                    <option value="德文">德文</option>
+                                    <option value="法文">法文</option>
+                                    <option value="西班牙文">西班牙文</option>
+                                    <option value="俄文">俄文</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="target_lang2-interact">目标语言：</label>
+                                <select id="target_lang2-interact" name="target_lang" required>
+                                    <option value="中文">中文</option>
+                                    <option value="英文">英文</option>
+                                    <option value="日文">日文</option>
+                                    <option value="韩文">韩文</option>
+                                    <option value="德文">德文</option>
+                                    <option value="法文">法文</option>
+                                    <option value="西班牙文">西班牙文</option>
+                                    <option value="俄文">俄文</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="system_prompt2-interact">系统提示词：</label>
+                                <textarea id="system_prompt2-interact" name="system_prompt" rows="6" placeholder="输入系统提示词，用于指导翻译风格和规则"></textarea>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 右侧对话区域 -->
+                    <div class="interactive-chat">
+                        <div class="chat-container" id="chatContainer2">
+                            <!-- 对话内容将动态添加到这里 -->
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user_prompt2-interact">用户提示词：</label>
+                            <textarea id="user_prompt2-interact" name="user_prompt" rows="3" placeholder="输入需要翻译的内容..."></textarea>
+                        </div>
+                        
+                        <button type="button" id="sendBtn2" class="send-button">发送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI翻译页面 (原有页面内容) -->
+    <div class="page-area" id="aiTranslationPage">
+        <div class="container">
+            <!-- 左侧翻译区域 -->
+            <div class="translation-section">
+                <h2 class="section-title">工作区 1</h2>
+                <form id="translationForm1">
+                    <div class="form-group">
+                        <label for="file1">选择文件：</label>
+                        <input type="file" id="file1" name="file" accept=".txt,.doc,.docx" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="api_type1">选择API：</label>
+                        <select id="api_type1" name="api_type" required>
+                            <option value="deepseek">Deepseek</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="anthropic">Anthropic</option>
+                            <option value="google">Google</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="api_key1">API密钥：</label>
+                        <input type="password" id="api_key1" name="api_key" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="model1">选择模型：</label>
+                        <select id="model1" name="model" required>
+                            <!-- Deepseek模型 -->
+                            <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
+                            <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
+                            
+                            <!-- OpenAI模型 -->
+                            <option value="gpt-4o" data-api="openai">GPT-4</option>
+                            <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
+                            
+                            <!-- Claude模型 -->
+                            <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
+                            
+                            <!-- Gemini模型 -->
+                            <option value="gemini-pro" data-api="google">Gemini Pro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="temperature1">温度 (Temperature): <span id="temperature-value1">1.0</span></label>
+                        <div class="temperature-slider-container">
+                            <input type="range" id="temperature1" name="temperature" min="0" max="2" step="0.1" value="1.0" class="temperature-slider">
+                            <div class="temperature-marks">
+                                <span>0</span>
+                                <span>1.0</span>
+                                <span>2.0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="source_lang1">源语言：</label>
+                        <select id="source_lang1" name="source_lang" required>
+                            <option value="英文">英文</option>
+                            <option value="中文">中文</option>
+                            <option value="日文">日文</option>
+                            <option value="韩文">韩文</option>
+                            <option value="德文">德文</option>
+                            <option value="法文">法文</option>
+                            <option value="西班牙文">西班牙文</option>
+                            <option value="俄文">俄文</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="target_lang1">目标语言：</label>
+                        <select id="target_lang1" name="target_lang" required>
+                            <option value="中文">中文</option>
+                            <option value="英文">英文</option>
+                            <option value="日文">日文</option>
+                            <option value="韩文">韩文</option>
+                            <option value="德文">德文</option>
+                            <option value="法文">法文</option>
+                            <option value="西班牙文">西班牙文</option>
+                            <option value="俄文">俄文</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="system_prompt1">系统提示词（可选）：</label>
+                        <textarea id="system_prompt1" name="system_prompt" rows="3" placeholder="输入系统提示词，用于指导翻译风格和规则"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="user_prompt1">用户提示词（可选）：</label>
+                        <textarea id="user_prompt1" name="user_prompt" rows="3" placeholder="输入用户提示词，用于指定具体的翻译要求"></textarea>
+                    </div>
+                    
+                    <button type="submit" id="submitBtn1">开始翻译</button>
+                </form>
+                
+                <div id="status1" class="status"></div>
+                <div class="progress" id="progress1">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="download-section" id="downloadSection1"></div>
+            </div>
+
+            <!-- 右侧翻译区域 -->
+            <div class="translation-section">
+                <h2 class="section-title">工作区 2</h2>
+                <form id="translationForm2">
+                    <div class="form-group">
+                        <label for="file2">选择文件：</label>
+                        <input type="file" id="file2" name="file" accept=".txt,.doc,.docx" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="api_type2">选择API：</label>
+                        <select id="api_type2" name="api_type" required>
+                            <option value="deepseek">Deepseek</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="anthropic">Anthropic</option>
+                            <option value="google">Google</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="api_key2">API密钥：</label>
+                        <input type="password" id="api_key2" name="api_key" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="model2">选择模型：</label>
+                        <select id="model2" name="model" required>
+                            <!-- Deepseek模型 -->
+                            <option value="deepseek-chat" data-api="deepseek">Deepseek Chat</option>
+                            <option value="deepseek-reasoner" data-api="deepseek">Deepseek Reasoner</option>
+                            
+                            <!-- OpenAI模型 -->
+                            <option value="gpt-4o" data-api="openai">GPT-4</option>
+                            <option value="gpt-4.5-preview" data-api="openai">GPT-4.5 Preview</option>
+                            
+                            <!-- Claude模型 -->
+                            <option value="claude-3.7-sonnet-20250219" data-api="anthropic">Claude 3.7 Sonnet</option>
+                            
+                            <!-- Gemini模型 -->
+                            <option value="gemini-pro" data-api="google">Gemini Pro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="temperature2">温度 (Temperature): <span id="temperature-value2">1.0</span></label>
+                        <div class="temperature-slider-container">
+                            <input type="range" id="temperature2" name="temperature" min="0" max="2" step="0.1" value="1.0" class="temperature-slider">
+                            <div class="temperature-marks">
+                                <span>0</span>
+                                <span>1.0</span>
+                                <span>2.0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="source_lang2">源语言：</label>
+                        <select id="source_lang2" name="source_lang" required>
+                            <option value="英文">英文</option>
+                            <option value="中文">中文</option>
+                            <option value="日文">日文</option>
+                            <option value="韩文">韩文</option>
+                            <option value="德文">德文</option>
+                            <option value="法文">法文</option>
+                            <option value="西班牙文">西班牙文</option>
+                            <option value="俄文">俄文</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="target_lang2">目标语言：</label>
+                        <select id="target_lang2" name="target_lang" required>
+                            <option value="中文">中文</option>
+                            <option value="英文">英文</option>
+                            <option value="日文">日文</option>
+                            <option value="韩文">韩文</option>
+                            <option value="德文">德文</option>
+                            <option value="法文">法文</option>
+                            <option value="西班牙文">西班牙文</option>
+                            <option value="俄文">俄文</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="system_prompt2">系统提示词（可选）：</label>
+                        <textarea id="system_prompt2" name="system_prompt" rows="3" placeholder="输入系统提示词，用于指导翻译风格和规则"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="user_prompt2">用户提示词（可选）：</label>
+                        <textarea id="user_prompt2" name="user_prompt" rows="3" placeholder="输入用户提示词，用于指定具体的翻译要求"></textarea>
+                    </div>
+                    
+                    <button type="submit" id="submitBtn2">开始翻译</button>
+                </form>
+                
+                <div id="status2" class="status"></div>
+                <div class="progress" id="progress2">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="download-section" id="downloadSection2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI译审页面 -->
+    <div class="page-area" id="aiReviewPage">
+        <div class="empty-page">
+            <h2>AI译审</h2>
+            <p>该功能正在开发中，敬请期待...</p>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后显示入口选择，隐藏加载动画
+        window.addEventListener('load', function() {
+            // 设置问候语动画
+            const greetings = document.querySelectorAll('.greeting');
+            const animationDuration = 3000; // 进一步延长总动画持续时间
+            const segmentDuration = animationDuration / greetings.length;
+            
+            greetings.forEach((greeting, index) => {
+                greeting.style.animation = `greetingAnimation ${segmentDuration}ms ease-in-out forwards`;
+                greeting.style.animationDelay = `${index * segmentDuration}ms`;
+            });
+            
+            const loader = document.getElementById('loader');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    
+                    // 显示入口选择
+                    document.getElementById('entryContainer').style.display = 'flex';
+                }, 500);
+            }, 3000); // 延长加载时间
+            
+            // 默认显示AI翻译页面
+            showPage('ai-translation');
+        });
+
+        // 入口选择处理
+        const entryCards = document.querySelectorAll('.entry-card');
+        entryCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const pageId = this.getAttribute('data-page');
+                showPage(pageId);
+            });
+        });
+        
+        // 显示页面函数
+        function showPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page-area').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // 显示选定页面
+            let pageToShow;
+            switch(pageId) {
+                case 'interactive':
+                    pageToShow = document.getElementById('interactivePage');
+                    break;
+                case 'ai-translation':
+                    pageToShow = document.getElementById('aiTranslationPage');
+                    break;
+                case 'ai-review':
+                    pageToShow = document.getElementById('aiReviewPage');
+                    break;
+            }
+            
+            if (pageToShow) {
+                pageToShow.classList.add('active');
+            }
+            
+            // 高亮选中的入口卡片
+            entryCards.forEach(card => {
+                if (card.getAttribute('data-page') === pageId) {
+                    card.style.borderColor = 'var(--primary-color)';
+                } else {
+                    card.style.borderColor = 'var(--border-color)';
+                }
+            });
+        }
+
+        // 更新模型选项的函数
+        function updateModelOptions(apiType, modelSelect) {
+            const options = modelSelect.getElementsByTagName('option');
+            for (let option of options) {
+                if (option.getAttribute('data-api') === apiType) {
+                    option.style.display = '';
+                } else {
+                    option.style.display = 'none';
+                }
+            }
+            // 选择第一个可见的选项
+            for (let option of options) {
+                if (option.style.display !== 'none') {
+                    option.selected = true;
+                    break;
+                }
+            }
+        }
+
+        // 为两个区域的API选择添加事件监听器
+        document.getElementById('api_type1').addEventListener('change', function() {
+            updateModelOptions(this.value, document.getElementById('model1'));
+        });
+
+        document.getElementById('api_type2').addEventListener('change', function() {
+            updateModelOptions(this.value, document.getElementById('model2'));
+        });
+
+        // 初始化模型选项
+        updateModelOptions('deepseek', document.getElementById('model1'));
+        updateModelOptions('deepseek', document.getElementById('model2'));
+
+        // 处理表单提交的函数
+        function handleSubmit(formId, statusId, progressId, downloadSectionId) {
+            const form = document.getElementById(formId);
+            const status = document.getElementById(statusId);
+            const progress = document.getElementById(progressId);
+            const progressFill = progress.querySelector('.progress-fill');
+            const downloadSection = document.getElementById(downloadSectionId);
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                status.style.display = 'none';
+                progress.style.display = 'block';
+                progressFill.style.width = '0%';
+                downloadSection.innerHTML = '';
+                
+                try {
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.error) {
+                        status.textContent = result.error;
+                        status.className = 'status error';
+                        status.style.display = 'block';
+                    } else {
+                        status.textContent = result.message;
+                        status.className = 'status success';
+                        status.style.display = 'block';
+                        
+                        // 显示下载按钮
+                        const downloadBtn = document.createElement('a');
+                        downloadBtn.href = `/download/${result.output_file}`;
+                        downloadBtn.className = 'download-btn';
+                        downloadBtn.textContent = '下载翻译结果';
+                        downloadSection.appendChild(downloadBtn);
+                    }
+                } catch (error) {
+                    status.textContent = '翻译过程中发生错误，请重试';
+                    status.className = 'status error';
+                    status.style.display = 'block';
+                } finally {
+                    progress.style.display = 'none';
+                }
+            });
+        }
+
+        // 为两个表单添加提交处理
+        handleSubmit('translationForm1', 'status1', 'progress1', 'downloadSection1');
+        handleSubmit('translationForm2', 'status2', 'progress2', 'downloadSection2');
+
+        // 交互翻译页面功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 温度滑块功能
+            const temperatureSlider1Interact = document.getElementById('temperature1-interact');
+            const temperatureValue1Interact = document.getElementById('temperature-value1-interact');
+            
+            if (temperatureSlider1Interact && temperatureValue1Interact) {
+                temperatureSlider1Interact.addEventListener('input', function() {
+                    temperatureValue1Interact.textContent = this.value;
+                });
+            }
+            
+            const temperatureSlider2Interact = document.getElementById('temperature2-interact');
+            const temperatureValue2Interact = document.getElementById('temperature-value2-interact');
+            
+            if (temperatureSlider2Interact && temperatureValue2Interact) {
+                temperatureSlider2Interact.addEventListener('input', function() {
+                    temperatureValue2Interact.textContent = this.value;
+                });
+            }
+            
+            // 设置栏切换功能
+            const settingsToggle1 = document.getElementById('settingsToggle1');
+            const interactiveContainer1 = document.getElementById('interactiveContainer1');
+            
+            if (settingsToggle1 && interactiveContainer1) {
+                settingsToggle1.addEventListener('click', function() {
+                    interactiveContainer1.classList.toggle('settings-collapsed');
+                    // 更新按钮图标方向
+                    const icon = this.querySelector('i');
+                    if (interactiveContainer1.classList.contains('settings-collapsed')) {
+                        icon.classList.remove('fa-chevron-left');
+                        icon.classList.add('fa-chevron-right');
+                    } else {
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-left');
+                    }
+                });
+            }
+            
+            const settingsToggle2 = document.getElementById('settingsToggle2');
+            const interactiveContainer2 = document.getElementById('interactiveContainer2');
+            
+            if (settingsToggle2 && interactiveContainer2) {
+                settingsToggle2.addEventListener('click', function() {
+                    interactiveContainer2.classList.toggle('settings-collapsed');
+                    // 更新按钮图标方向
+                    const icon = this.querySelector('i');
+                    if (interactiveContainer2.classList.contains('settings-collapsed')) {
+                        icon.classList.remove('fa-chevron-left');
+                        icon.classList.add('fa-chevron-right');
+                    } else {
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-left');
+                    }
+                });
+            }
+            
+            // AI翻译页面的温度滑块功能
+            const temperatureSlider1 = document.getElementById('temperature1');
+            const temperatureValue1 = document.getElementById('temperature-value1');
+            
+            if (temperatureSlider1 && temperatureValue1) {
+                temperatureSlider1.addEventListener('input', function() {
+                    temperatureValue1.textContent = this.value;
+                });
+            }
+            
+            const temperatureSlider2 = document.getElementById('temperature2');
+            const temperatureValue2 = document.getElementById('temperature-value2');
+            
+            if (temperatureSlider2 && temperatureValue2) {
+                temperatureSlider2.addEventListener('input', function() {
+                    temperatureValue2.textContent = this.value;
+                });
+            }
+            
+            // 为交互翻译页面的API选择添加事件监听器
+            const interactiveApiType1 = document.getElementById('interactive_api_type1');
+            const interactiveModel1 = document.getElementById('interactive_model1');
+            
+            if (interactiveApiType1 && interactiveModel1) {
+                interactiveApiType1.addEventListener('change', function() {
+                    updateModelOptions(this.value, interactiveModel1);
+                });
+                
+                // 初始化交互翻译页面的模型选项
+                updateModelOptions('deepseek', interactiveModel1);
+            }
+            
+            const interactiveApiType2 = document.getElementById('interactive_api_type2');
+            const interactiveModel2 = document.getElementById('interactive_model2');
+            
+            if (interactiveApiType2 && interactiveModel2) {
+                interactiveApiType2.addEventListener('change', function() {
+                    updateModelOptions(this.value, interactiveModel2);
+                });
+                
+                // 初始化交互翻译页面的模型选项
+                updateModelOptions('deepseek', interactiveModel2);
+            }
+            
+            // 发送消息功能 - 区域1
+            const sendBtn1 = document.getElementById('sendBtn1');
+            const userPrompt1 = document.getElementById('user_prompt1-interact');
+            const chatContainer1 = document.getElementById('chatContainer1');
+            
+            if (sendBtn1 && userPrompt1 && chatContainer1) {
+                sendBtn1.addEventListener('click', async function() {
+                    const userMessage = userPrompt1.value.trim();
+                    if (!userMessage) return;
+                    
+                    // 显示用户消息
+                    appendMessage(userMessage, 'user', null, chatContainer1);
+                    
+                    // 清空输入框
+                    userPrompt1.value = '';
+                    
+                    // 获取翻译设置
+                    const apiType = document.getElementById('interactive_api_type1').value;
+                    const apiKey = document.getElementById('interactive_api_key1').value;
+                    const model = document.getElementById('interactive_model1').value;
+                    const modelText = document.getElementById('interactive_model1').options[document.getElementById('interactive_model1').selectedIndex].text;
+                    const temperature = document.getElementById('temperature1-interact').value;
+                    const sourceLang = document.getElementById('source_lang1-interact').value;
+                    const targetLang = document.getElementById('target_lang1-interact').value;
+                    const systemPrompt = document.getElementById('system_prompt1-interact').value;
+                    
+                    // 显示加载指示
+                    const loadingId = showLoading(chatContainer1);
+                    
+                    try {
+                        // 发送请求到后端API
+                        const response = await fetch('/translate', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                user_message: userMessage,
+                                api_type: apiType,
+                                api_key: apiKey,
+                                model: model,
+                                temperature: temperature,
+                                source_lang: sourceLang,
+                                target_lang: targetLang,
+                                system_prompt: systemPrompt
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        // 隐藏加载指示
+                        hideLoading(loadingId, chatContainer1);
+                        
+                        if (result.error) {
+                            // 显示错误消息
+                            appendMessage(`翻译出错: ${result.error}`, 'error', null, chatContainer1);
+                        } else {
+                            // 显示AI回复
+                            appendMessage(result.translation, 'ai', modelText, chatContainer1);
+                        }
+                    } catch (error) {
+                        // 隐藏加载指示
+                        hideLoading(loadingId, chatContainer1);
+                        
+                        // 显示错误消息
+                        appendMessage(`发生错误: ${error.message}`, 'error', null, chatContainer1);
+                    }
+                });
+                
+                // 监听Enter键发送消息
+                userPrompt1.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendBtn1.click();
+                    }
+                });
+            }
+            
+            // 发送消息功能 - 区域2
+            const sendBtn2 = document.getElementById('sendBtn2');
+            const userPrompt2 = document.getElementById('user_prompt2-interact');
+            const chatContainer2 = document.getElementById('chatContainer2');
+            
+            if (sendBtn2 && userPrompt2 && chatContainer2) {
+                sendBtn2.addEventListener('click', async function() {
+                    const userMessage = userPrompt2.value.trim();
+                    if (!userMessage) return;
+                    
+                    // 显示用户消息
+                    appendMessage(userMessage, 'user', null, chatContainer2);
+                    
+                    // 清空输入框
+                    userPrompt2.value = '';
+                    
+                    // 获取翻译设置
+                    const apiType = document.getElementById('interactive_api_type2').value;
+                    const apiKey = document.getElementById('interactive_api_key2').value;
+                    const model = document.getElementById('interactive_model2').value;
+                    const modelText = document.getElementById('interactive_model2').options[document.getElementById('interactive_model2').selectedIndex].text;
+                    const temperature = document.getElementById('temperature2-interact').value;
+                    const sourceLang = document.getElementById('source_lang2-interact').value;
+                    const targetLang = document.getElementById('target_lang2-interact').value;
+                    const systemPrompt = document.getElementById('system_prompt2-interact').value;
+                    
+                    // 显示加载指示
+                    const loadingId = showLoading(chatContainer2);
+                    
+                    try {
+                        // 发送请求到后端API
+                        const response = await fetch('/translate', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                user_message: userMessage,
+                                api_type: apiType,
+                                api_key: apiKey,
+                                model: model,
+                                temperature: temperature,
+                                source_lang: sourceLang,
+                                target_lang: targetLang,
+                                system_prompt: systemPrompt
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        // 隐藏加载指示
+                        hideLoading(loadingId, chatContainer2);
+                        
+                        if (result.error) {
+                            // 显示错误消息
+                            appendMessage(`翻译出错: ${result.error}`, 'error', null, chatContainer2);
+                        } else {
+                            // 显示AI回复
+                            appendMessage(result.translation, 'ai', modelText, chatContainer2);
+                        }
+                    } catch (error) {
+                        // 隐藏加载指示
+                        hideLoading(loadingId, chatContainer2);
+                        
+                        // 显示错误消息
+                        appendMessage(`发生错误: ${error.message}`, 'error', null, chatContainer2);
+                    }
+                });
+                
+                // 监听Enter键发送消息
+                userPrompt2.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendBtn2.click();
+                    }
+                });
+            }
+            
+            // 添加消息到聊天框
+            function appendMessage(content, type, modelName, container) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                
+                if (type === 'user') {
+                    messageDiv.classList.add('user-message');
+                    messageDiv.textContent = content;
+                } else if (type === 'ai') {
+                    messageDiv.classList.add('ai-message');
+                    
+                    // 添加模型名称
+                    if (modelName) {
+                        const modelNameDiv = document.createElement('div');
+                        modelNameDiv.classList.add('model-name');
+                        modelNameDiv.textContent = `${modelName}`;
+                        messageDiv.appendChild(modelNameDiv);
+                    }
+                    
+                    const contentDiv = document.createElement('div');
+                    contentDiv.textContent = content;
+                    messageDiv.appendChild(contentDiv);
+                } else if (type === 'error') {
+                    messageDiv.classList.add('error-message');
+                    messageDiv.textContent = content;
+                }
+                
+                container.appendChild(messageDiv);
+                
+                // 滚动到底部
+                container.scrollTop = container.scrollHeight;
+            }
+            
+            // 显示加载指示
+            function showLoading(container) {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.classList.add('message', 'ai-message', 'loading');
+                loadingDiv.textContent = '正在翻译...';
+                
+                container.appendChild(loadingDiv);
+                container.scrollTop = container.scrollHeight;
+                
+                return Date.now(); // 返回唯一ID用于后续隐藏
+            }
+            
+            // 隐藏加载指示
+            function hideLoading(id, container) {
+                const loadingElements = container.querySelectorAll('.loading');
+                if (loadingElements.length > 0) {
+                    loadingElements[loadingElements.length - 1].remove();
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
